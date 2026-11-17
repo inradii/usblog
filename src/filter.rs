@@ -40,3 +40,33 @@ pub fn apply_filters(events: Vec<UsbEvent>, opts: &FilterOpts) -> Vec<UsbEvent> 
 
     out
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn event(vid: &str, pid: &str) -> UsbEvent {
+        UsbEvent {
+            vid: Some(vid.to_string()),
+            pid: Some(pid.to_string()),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn filter_by_vid_keeps_matching_events() {
+        let events = vec![event("1234", "abcd"), event("5678", "abcd")];
+        let opts = FilterOpts { vid: vec!["1234".to_string()], ..Default::default() };
+        let result = apply_filters(events, &opts);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].vid.as_deref(), Some("1234"));
+    }
+
+    #[test]
+    fn num_limit_truncates_results() {
+        let events = vec![event("1", "a"), event("2", "b"), event("3", "c")];
+        let opts = FilterOpts { num: Some(2), ..Default::default() };
+        let result = apply_filters(events, &opts);
+        assert_eq!(result.len(), 2);
+    }
+}
