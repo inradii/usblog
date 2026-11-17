@@ -18,13 +18,13 @@ pub fn apply_filters(events: Vec<UsbEvent>, opts: &FilterOpts) -> Vec<UsbEvent> 
     let mut out: Vec<UsbEvent> = events
         .into_iter()
         .filter(|e| {
-            field_matches(&e.host,     &opts.host)
-                && field_matches(&e.vid,      &opts.vid)
-                && field_matches(&e.pid,      &opts.pid)
-                && field_matches(&e.prod,     &opts.prod)
+            field_matches(&e.host, &opts.host)
+                && field_matches(&e.vid, &opts.vid)
+                && field_matches(&e.pid, &opts.pid)
+                && field_matches(&e.prod, &opts.prod)
                 && field_matches(&e.manufact, &opts.manufact)
-                && field_matches(&e.serial,   &opts.serial)
-                && field_matches(&e.port,     &opts.port)
+                && field_matches(&e.serial, &opts.serial)
+                && field_matches(&e.port, &opts.port)
                 && (opts.date.is_empty()
                     || opts.date.iter().any(|d| {
                         e.conn
@@ -56,7 +56,10 @@ mod tests {
     #[test]
     fn filter_by_vid_keeps_matching_events() {
         let events = vec![event("1234", "abcd"), event("5678", "abcd")];
-        let opts = FilterOpts { vid: vec!["1234".to_string()], ..Default::default() };
+        let opts = FilterOpts {
+            vid: vec!["1234".to_string()],
+            ..Default::default()
+        };
         let result = apply_filters(events, &opts);
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].vid.as_deref(), Some("1234"));
@@ -65,7 +68,10 @@ mod tests {
     #[test]
     fn num_limit_truncates_results() {
         let events = vec![event("1", "a"), event("2", "b"), event("3", "c")];
-        let opts = FilterOpts { num: Some(2), ..Default::default() };
+        let opts = FilterOpts {
+            num: Some(2),
+            ..Default::default()
+        };
         let result = apply_filters(events, &opts);
         assert_eq!(result.len(), 2);
     }

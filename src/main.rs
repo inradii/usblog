@@ -133,15 +133,15 @@ struct FilterArgs {
 impl From<FilterArgs> for FilterOpts {
     fn from(a: FilterArgs) -> FilterOpts {
         FilterOpts {
-            date:     a.date,
-            host:     a.host,
-            vid:      a.vid,
-            pid:      a.pid,
-            prod:     a.prod,
+            date: a.date,
+            host: a.host,
+            vid: a.vid,
+            pid: a.pid,
+            prod: a.prod,
             manufact: a.manufact,
-            serial:   a.serial,
-            port:     a.port,
-            num:      a.num,
+            serial: a.serial,
+            port: a.port,
+            num: a.num,
         }
     }
 }
@@ -157,7 +157,10 @@ fn banner() {
     ] {
         println!("{}", line.cyan());
     }
-    println!("{}\n", "USB Event collection and diff Tool for Linux".dimmed());
+    println!(
+        "{}\n",
+        "USB Event collection and diff Tool for Linux".dimmed()
+    );
 }
 
 fn resolve_source(src: &SourceArgs) -> (Vec<PathBuf>, bool) {
@@ -184,7 +187,10 @@ fn display(events: &[UsbEvent], d: &DisplayArgs, violations: bool) {
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    match cli.command.unwrap_or_else(|| Commands::History(HistoryArgs::default())) {
+    match cli
+        .command
+        .unwrap_or_else(|| Commands::History(HistoryArgs::default()))
+    {
         Commands::History(args) => {
             if !args.source.quiet {
                 banner();
@@ -198,7 +204,12 @@ fn main() -> Result<()> {
             }
         }
 
-        Commands::Generate { output, keys, source, filter } => {
+        Commands::Generate {
+            output,
+            keys,
+            source,
+            filter,
+        } => {
             if !source.quiet {
                 banner();
             }
@@ -221,7 +232,7 @@ fn main() -> Result<()> {
                         .map(|(k, v)| {
                             let jv = match v {
                                 Some(s) => serde_json::Value::String(s.clone()),
-                                None    => serde_json::Value::Null,
+                                None => serde_json::Value::Null,
                             };
                             (k.clone(), jv)
                         })
@@ -244,11 +255,16 @@ fn main() -> Result<()> {
             );
         }
 
-        Commands::Violations { auth, keys, display: disp, source, filter } => {
+        Commands::Violations {
+            auth,
+            keys,
+            display: disp,
+            source,
+            filter,
+        } => {
             let auth_text = std::fs::read_to_string(&auth)
                 .with_context(|| format!("Cannot read {}", auth.display()))?;
-            let auth_entries: Vec<serde_json::Value> =
-                serde_json::from_str(&auth_text)?;
+            let auth_entries: Vec<serde_json::Value> = serde_json::from_str(&auth_text)?;
 
             let (files, use_jctl) = resolve_source(&source);
             let events = read_and_parse(&files, use_jctl, source.quiet)?;

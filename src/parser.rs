@@ -10,16 +10,13 @@ use crate::types::UsbEvent;
 
 // Kernel log lines containing USB events have the form:
 //   ...] usb PORT: message   or   ...: usb PORT: message
-static RE_USB: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?:\]|:) usb (.*?): ").unwrap());
+static RE_USB: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?:\]|:) usb (.*?): ").unwrap());
 
 static RE_VID: Lazy<Regex> = Lazy::new(|| Regex::new(r"idVendor=(\w+)").unwrap());
 static RE_PID: Lazy<Regex> = Lazy::new(|| Regex::new(r"idProduct=(\w+)").unwrap());
 static RE_PROD: Lazy<Regex> = Lazy::new(|| Regex::new(r"Product: (.*)$").unwrap());
-static RE_MANUFACT: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"Manufacturer: (.*)$").unwrap());
-static RE_SERIAL: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"SerialNumber: (.*)$").unwrap());
+static RE_MANUFACT: Lazy<Regex> = Lazy::new(|| Regex::new(r"Manufacturer: (.*)$").unwrap());
+static RE_SERIAL: Lazy<Regex> = Lazy::new(|| Regex::new(r"SerialNumber: (.*)$").unwrap());
 // Matches "usb 1-1:" or "usb 2-3.4:" — the port identifier ends with a digit
 static RE_PORT: Lazy<Regex> = Lazy::new(|| Regex::new(r"usb (.*[0-9]):").unwrap());
 
@@ -31,8 +28,8 @@ enum Action {
 
 #[derive(Debug, Clone)]
 struct FilteredLine {
-    date:    String,
-    action:  Action,
+    date: String,
+    action: Action,
     logline: String,
 }
 
@@ -57,9 +54,7 @@ fn parse_ts(line: &str) -> Option<(String, String)> {
         } else {
             ts.to_string()
         };
-        if let Ok(dt) =
-            chrono::DateTime::parse_from_str(&norm, "%Y-%m-%dT%H:%M:%S%.f%z")
-        {
+        if let Ok(dt) = chrono::DateTime::parse_from_str(&norm, "%Y-%m-%dT%H:%M:%S%.f%z") {
             return Some((
                 dt.format("%Y-%m-%d %H:%M:%S").to_string(),
                 line[32..].trim().to_string(),
@@ -78,9 +73,7 @@ fn parse_ts(line: &str) -> Option<(String, String)> {
         };
         // Prepend a dummy year so NaiveDateTime can parse the full format.
         let with_year = format!("2000 {}", norm);
-        if let Ok(dt) =
-            chrono::NaiveDateTime::parse_from_str(&with_year, "%Y %b %d %H:%M:%S")
-        {
+        if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(&with_year, "%Y %b %d %H:%M:%S") {
             return Some((
                 format!("????-{}", dt.format("%m-%d %H:%M:%S")),
                 line[15..].trim().to_string(),
@@ -113,7 +106,11 @@ fn process_text(text: &str) -> Vec<FilteredLine> {
         } else {
             continue;
         };
-        out.push(FilteredLine { date, action, logline });
+        out.push(FilteredLine {
+            date,
+            action,
+            logline,
+        });
     }
     out
 }
@@ -121,16 +118,15 @@ fn process_text(text: &str) -> Vec<FilteredLine> {
 /// Read the contents of a file, decompressing if necessary
 fn read_file(path: &Path) -> Result<String> {
     if path.extension().and_then(|e| e.to_str()) == Some("gz") {
-        let file = std::fs::File::open(path)
-            .with_context(|| format!("Cannot open {}", path.display()))?;
+        let file =
+            std::fs::File::open(path).with_context(|| format!("Cannot open {}", path.display()))?;
         let mut dec = GzDecoder::new(file);
         let mut s = String::new();
         dec.read_to_string(&mut s)
             .with_context(|| format!("Cannot decompress {}", path.display()))?;
         Ok(s)
     } else {
-        std::fs::read_to_string(path)
-            .with_context(|| format!("Cannot read {}", path.display()))
+        std::fs::read_to_string(path).with_context(|| format!("Cannot read {}", path.display()))
     }
 }
 
@@ -162,7 +158,7 @@ fn collect_filtered(files: &[PathBuf], quiet: bool) -> Vec<FilteredLine> {
         }
         match read_file(path) {
             Ok(text) => all.extend(process_text(&text)),
-            Err(e)   => eprintln!("Warning: {}", e),
+            Err(e) => eprintln!("Warning: {}", e),
         }
     }
     all
@@ -182,7 +178,7 @@ fn collect_journalctl(quiet: bool) -> Result<Vec<FilteredLine>> {
 }
 
 /// State-machine parser that mirrors usbrip's _parse_history logic:
-/// 
+///
 ///   link 1 -> waiting for "New USB device found"
 ///   link 2 -> next connect line should carry Product
 ///   link 3 -> next connect line should carry Manufacturer
@@ -200,12 +196,7 @@ fn parse_history(lines: Vec<FilteredLine>) -> Vec<UsbEvent> {
         match item.action {
             Action::Connect => {
                 if item.logline.contains("New USB device found, ") {
-                    let host = item
-                        .logline
-                        .splitn(2, ' ')
-                        .next()
-                        .unwrap_or("")
-                        .to_string();
+                    let host = item.logline.splitn(2, ' ').next().unwrap_or("").to_string();
                     let vid = RE_VID
                         .captures(&item.logline)
                         .and_then(|c| c.get(1))
@@ -290,10 +281,8 @@ mod tests {
         let (date, _) = parse_ts("Nov 15 10:00:00 host kernel: usb 1-1: msg").unwrap();
         assert!(date.starts_with("????-11-15 10:00:00"));
 
-        let (date, _) = parse_ts(
-            "2022-11-15T10:00:00.123456+00:00 host kernel: usb 1-1: msg",
-        )
-        .unwrap();
+        let (date, _) =
+            parse_ts("2022-11-15T10:00:00.123456+00:00 host kernel: usb 1-1: msg").unwrap();
         assert_eq!(date, "2022-11-15 10:00:00");
     }
 }
