@@ -84,6 +84,36 @@ usblog violations <AUTH> [OPTIONS]
 
 Accepts the same source, display and filter options as the subcommand `history`.
 
+## Use case - Detect a rogue device (e.g., USB Rubber Ducky)
+
+A USB Rubber Ducky enumerates as a keyboard but is manufactured by Hak5.
+The quickest check is to search the full history for its vendor or product strings:
+
+```sh
+# Search by manufacturer name
+usblog history --manufact "Hak5"
+
+# Search by product name
+usblog history --prod "Rubber Ducky"
+
+# Search by known vendor ID (Hak5 VID: 0xf1f1)
+usblog history --vid f1f1
+```
+
+For systematic detection, generate an authorization list from a known-good
+state and then flag anything that falls outside it:
+
+```sh
+# 1. Snapshot the currently trusted devices
+usblog generate authorized.json --key vid,pid,serial
+
+# 2. At any later point, report devices not in the list
+usblog violations authorized.json --key vid,pid,serial
+```
+
+Any device not in `authorized.json`, including a Rubber Ducky plugged in
+after the snapshot, will be reported as a violation.
+
 ## License
 
 Licensed under MIT.
