@@ -44,4 +44,6 @@ pub struct FilterOpts {
     pub serial: Vec<String>,
     pub port: Vec<String>,
     pub num: Option<usize>,
+    pub ignore_vid: Vec<String>,
+    pub ignore_pid: Vec<String>,
 }

@@ -13,6 +13,17 @@ fn field_matches(value: &Option<String>, filters: &[String]) -> bool {
     }
 }
 
+/// Check if a field value should be ignored based on the provided ignore list
+fn field_ignored(value: &Option<String>, ignores: &[String]) -> bool {
+    if ignores.is_empty() {
+        return false;
+    }
+    match value {
+        Some(v) => ignores.iter().any(|f| v.to_lowercase() == f.to_lowercase()),
+        None => false,
+    }
+}
+
 /// Apply filtering options to a list of USB events and return the filtered list
 pub fn apply_filters(events: Vec<UsbEvent>, opts: &FilterOpts) -> Vec<UsbEvent> {
     let mut out: Vec<UsbEvent> = events
@@ -30,6 +41,8 @@ pub fn apply_filters(events: Vec<UsbEvent>, opts: &FilterOpts) -> Vec<UsbEvent> 
                         .date
                         .iter()
                         .any(|d| e.conn.as_deref().is_some_and(|c| c.starts_with(d.as_str()))))
+                && !field_ignored(&e.vid, &opts.ignore_vid)
+                && !field_ignored(&e.pid, &opts.ignore_pid)
         })
         .collect();
 
@@ -62,6 +75,18 @@ mod tests {
         let result = apply_filters(events, &opts);
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].vid.as_deref(), Some("1234"));
+    }
+
+    #[test]
+    fn ignore_vid_excludes_matching_events() {
+        let events = vec![event("046d", "c52b"), event("f1f1", "0001")];
+        let opts = FilterOpts {
+            ignore_vid: vec!["f1f1".to_string()],
+            ..Default::default()
+        };
+        let result = apply_filters(events, &opts);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].vid.as_deref(), Some("046d"));
     }
 
     #[test]
