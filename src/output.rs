@@ -96,10 +96,3 @@ pub fn save_json(events: &[UsbEvent], path: &Path) -> Result<()> {
     );
     Ok(())
 }
-
-/// Load USB events from a JSON file
-pub fn load_json(path: &Path) -> Result<Vec<UsbEvent>> {
-    let content = std::fs::read_to_string(path)?;
-    let events: Vec<UsbEvent> = serde_json::from_str(&content)?;
-    Ok(events)
-}
