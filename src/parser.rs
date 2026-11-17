@@ -281,6 +281,23 @@ fn parse_history(lines: Vec<FilteredLine>) -> Vec<UsbEvent> {
     events
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_ts_handles_syslog_and_journalctl_formats() {
+        let (date, _) = parse_ts("Nov 15 10:00:00 host kernel: usb 1-1: msg").unwrap();
+        assert!(date.starts_with("????-11-15 10:00:00"));
+
+        let (date, _) = parse_ts(
+            "2022-11-15T10:00:00.123456+00:00 host kernel: usb 1-1: msg",
+        )
+        .unwrap();
+        assert_eq!(date, "2022-11-15 10:00:00");
+    }
+}
+
 /// Read and parse USB events from log files or the system journal
 pub fn read_and_parse(
     files: &[PathBuf],
