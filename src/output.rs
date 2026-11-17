@@ -1,6 +1,6 @@
 use anyhow::Result;
 use colored::Colorize;
-use prettytable::{format, Cell, Row, Table};
+use prettytable::{Cell, Row, Table, format};
 use std::path::Path;
 
 use crate::types::UsbEvent;
@@ -52,15 +52,15 @@ pub fn print_list(events: &[UsbEvent], violations: bool) {
     for (i, e) in events.iter().enumerate() {
         println!("{}", format!("── Event #{} ", i + 1).dimmed());
         let pairs: &[(&str, &Option<String>)] = &[
-            ("Connected",     &e.conn),
-            ("Host",          &e.host),
-            ("VID",           &e.vid),
-            ("PID",           &e.pid),
-            ("Product",       &e.prod),
-            ("Manufacturer",  &e.manufact),
+            ("Connected", &e.conn),
+            ("Host", &e.host),
+            ("VID", &e.vid),
+            ("PID", &e.pid),
+            ("Product", &e.prod),
+            ("Manufacturer", &e.manufact),
             ("Serial Number", &e.serial),
-            ("Port",          &e.port),
-            ("Disconnected",  &e.disconn),
+            ("Port", &e.port),
+            ("Disconnected", &e.disconn),
         ];
         for (label, value) in pairs {
             let v = opt(value);
