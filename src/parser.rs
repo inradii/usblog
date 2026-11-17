@@ -196,7 +196,7 @@ fn parse_history(lines: Vec<FilteredLine>) -> Vec<UsbEvent> {
         match item.action {
             Action::Connect => {
                 if item.logline.contains("New USB device found, ") {
-                    let host = item.logline.splitn(2, ' ').next().unwrap_or("").to_string();
+                    let host = item.logline.split(' ').next().unwrap_or("").to_string();
                     let vid = RE_VID
                         .captures(&item.logline)
                         .and_then(|c| c.get(1))

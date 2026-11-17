@@ -26,11 +26,10 @@ pub fn apply_filters(events: Vec<UsbEvent>, opts: &FilterOpts) -> Vec<UsbEvent> 
                 && field_matches(&e.serial, &opts.serial)
                 && field_matches(&e.port, &opts.port)
                 && (opts.date.is_empty()
-                    || opts.date.iter().any(|d| {
-                        e.conn
-                            .as_deref()
-                            .map_or(false, |c| c.starts_with(d.as_str()))
-                    }))
+                    || opts
+                        .date
+                        .iter()
+                        .any(|d| e.conn.as_deref().is_some_and(|c| c.starts_with(d.as_str()))))
         })
         .collect();
 
