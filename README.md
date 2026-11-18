@@ -23,6 +23,7 @@ Running `usblog` without a subcommand is equivalent to `usblog history`.
 | ------------ | ----------------------------------------------------- |
 | `history`    | Retrieve USB connection history from system logs      |
 | `generate`   | Generate an authorized device list from current state |
+| `live`       | Show USB events live                                  |
 | `violations` | Find events absent from an authorized device list     |
 
 ### history
