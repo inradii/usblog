@@ -1,4 +1,5 @@
 mod filter;
+mod live;
 mod output;
 mod parser;
 mod types;
@@ -41,6 +42,16 @@ enum Commands {
         source: SourceArgs,
         #[clap(flatten)]
         filter: FilterArgs,
+    },
+
+    /// Watch USB connections and disconnections in real time
+    Live {
+        /// Exclude devices with this vendor ID (repeatable)
+        #[clap(long)]
+        ignore_vid: Vec<String>,
+        /// Exclude devices with this product ID (repeatable)
+        #[clap(long)]
+        ignore_pid: Vec<String>,
     },
 
     /// Find events absent from an authorized device list
@@ -128,6 +139,12 @@ struct FilterArgs {
     /// Limit to N results
     #[clap(short = 'n')]
     num: Option<usize>,
+    /// Exclude events matching this vendor ID (repeatable)
+    #[clap(long)]
+    ignore_vid: Vec<String>,
+    /// Exclude events matching this product ID (repeatable)
+    #[clap(long)]
+    ignore_pid: Vec<String>,
 }
 
 impl From<FilterArgs> for FilterOpts {
@@ -142,6 +159,8 @@ impl From<FilterArgs> for FilterOpts {
             serial: a.serial,
             port: a.port,
             num: a.num,
+            ignore_vid: a.ignore_vid,
+            ignore_pid: a.ignore_pid,
         }
     }
 }
@@ -202,6 +221,13 @@ fn main() -> Result<()> {
             if let Some(out) = args.output {
                 save_json(&filtered, &out)?;
             }
+        }
+
+        Commands::Live {
+            ignore_vid,
+            ignore_pid,
+        } => {
+            live::run(&ignore_vid, &ignore_pid)?;
         }
 
         Commands::Generate {
