@@ -9,6 +9,15 @@ It is inspired by [usbrip](https://github.com/snovvcrash/usbrip), which was unfo
 cargo install --path .
 ```
 
+For Nix or NixOS users is a package available. Keep in mind that the latest releases might only
+be present in the `unstable` channel.
+
+```bash
+nix-env -iA nixos.usblog
+
+nix-shell -p usblog
+```
+
 ## Usage
 
 ```sh
